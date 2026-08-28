@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0a0a0a">
+  <title>CashReward — Earn. Complete. Reward.</title>
+  <meta name="description" content="CashReward rewards dashboard starter site.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="toast" class="toast"></div>
+
+  <header class="topbar">
+    <a class="brand" href="#home" onclick="showPage('home')">
+      <span class="brand-mark">₵</span>
+      <span>Cash<span>Reward</span></span>
+    </a>
+    <nav>
+      <button class="nav-link active" data-page="home">Dashboard</button>
+      <button class="nav-link" data-page="tasks">Earn</button>
+      <button class="nav-link" data-page="wallet">Wallet</button>
+      <button class="nav-link" data-page="referrals">Referrals</button>
+      <button class="nav-link" data-page="leaderboard">Leaderboard</button>
+    </nav>
+    <div class="user-menu">
+      <button class="icon-btn" onclick="toggleNotifications()" aria-label="Notifications">🔔<i id="notificationDot"></i></button>
+      <button class="profile" onclick="toggleProfileMenu()">
+        <span class="avatar">JA</span>
+        <span class="profile-name">Jeremiah</span>
+        <span>⌄</span>
+      </button>
+      <div id="profileMenu" class="dropdown">
+        <button onclick="showModal('profileModal')">👤 Profile</button>
+        <button onclick="showModal('settingsModal')">⚙️ Settings</button>
+        <button onclick="resetDemo()">↻ Reset demo</button>
+      </div>
+    </div>
+    <div id="notificationPanel" class="notification-panel">
+      <div class="panel-title">Notifications</div>
+      <div class="notice">🎉 Welcome to CashReward!</div>
+      <div class="notice">💰 Your demo balance is ready.</div>
+      <div class="notice">🎯 New missions are available.</div>
+    </div>
+  </header>
+
+  <main>
+    <!-- HOME -->
+    <section id="page-home" class="page active">
+      <div class="hero compact-hero">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+          <span class="eyebrow">WELCOME BACK</span>
+          <h1>Turn your time into <em>rewards.</em></h1>
+          <p>Complete tasks, build your streak, invite friends and unlock higher tiers.</p>
+          <div class="hero-actions">
+            <button class="btn btn-gold" onclick="showPage('tasks')">Start Earning →</button>
+            <button class="btn btn-ghost" onclick="showPage('referrals')">Invite Friends</button>
+          </div>
+        </div>
+        <div class="hero-badge"><span>●</span> REWARDS ARE LIVE</div>
+      </div>
+
+      <div class="container">
+        <div class="stats-grid">
+          <div class="stat-card balance-card">
+            <div class="stat-icon">₵</div>
+            <div><small>Available Balance</small><strong id="balance">₵125.50</strong></div>
+            <button onclick="showPage('wallet')">→</button>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">★</div>
+            <div><small>Total Points</small><strong id="points">4,850</strong></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">↗</div>
+            <div><small>Total Earned</small><strong id="totalEarned">₵325.50</strong></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🔥</div>
+            <div><small>Daily Streak</small><strong id="streak">6 days</strong></div>
+          </div>
+        </div>
+
+        <div class="content-grid">
+          <div>
+            <div class="section-heading">
+              <div><span class="eyebrow">QUICK EARN</span><h2>Recommended tasks</h2></div>
+              <button class="text-btn" onclick="showPage('tasks')">View all →</button>
+            </div>
+            <div id="homeTasks" class="task-grid"></div>
+          </div>
+          <aside class="tier-card">
+            <div class="tier-top"><span class="eyebrow">YOUR TIER</span><span class="tier-icon">🥇</span></div>
+            <h3>Gold</h3>
+            <p>You're <b>150 points</b> away from Platinum.</p>
+            <div class="progress"><span style="width:85%"></span></div>
+            <div class="progress-label"><span>4,850 pts</span><span>5,000 pts</span></div>
+            <ul>
+              <li>+10% task bonus</li>
+              <li>Priority withdrawal review</li>
+              <li>Higher referral rewards</li>
+            </ul>
+          </aside>
+        </div>
+
+        <div class="section-heading mt">
+          <div><span class="eyebrow">TODAY</span><h2>Missions</h2></div>
+        </div>
+        <div class="mission-grid">
+          <div class="mission"><span class="mission-icon">🎯</span><div><b>Complete 3 tasks</b><small>2 / 3 completed</small><div class="mini-progress"><span style="width:66%"></span></div></div><strong>+100 pts</strong></div>
+          <div class="mission"><span class="mission-icon">👥</span><div><b>Invite a friend</b><small>0 / 1 completed</small><div class="mini-progress"><span style="width:0%"></span></div></div><strong>+250 pts</strong></div>
+          <div class="mission"><span class="mission-icon">🔥</span><div><b>Keep your streak</b><small>6 / 7 days</small><div class="mini-progress"><span style="width:86%"></span></div></div><strong>+150 pts</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TASKS -->
+    <section id="page-tasks" class="page">
+      <div class="container page-head">
+        <div><span class="eyebrow">EARN REWARDS</span><h1>Available tasks</h1><p>Choose a task, complete it, and claim your reward.</p></div>
+        <div class="filter-row"><button class="filter active">All</button><button class="filter">Surveys</button><button class="filter">Offers</button><button class="filter">Social</button></div>
+      </div>
+      <div class="container task-grid wide" id="allTasks"></div>
+    </section>
+
+    <!-- WALLET -->
+    <section id="page-wallet" class="page">
+      <div class="container page-head"><span class="eyebrow">YOUR MONEY</span><h1>Wallet</h1><p>Track your balance, earnings and withdrawals.</p></div>
+      <div class="container wallet-grid">
+        <div class="wallet-main">
+          <div class="big-balance"><small>Available to withdraw</small><strong id="walletBalance">₵125.50</strong><button class="btn btn-gold" onclick="showModal('withdrawModal')">Withdraw</button></div>
+          <div class="wallet-stats"><div><small>Total earned</small><b>₵325.50</b></div><div><small>Pending</small><b>₵0.00</b></div><div><small>Withdrawn</small><b>₵200.00</b></div></div>
+          <div class="section-heading mt"><div><span class="eyebrow">ACTIVITY</span><h2>Transactions</h2></div></div>
+          <div class="transactions" id="transactions"></div>
+        </div>
+        <aside class="withdraw-info"><span class="eyebrow">WITHDRAWALS</span><h2>Simple & transparent</h2><p>Set your minimum withdrawal and supported payment methods from your backend/admin system.</p><div class="method">🇬🇭 <b>Mobile Money</b><span>Configure in production</span></div><div class="method">🏦 <b>Bank Transfer</b><span>Configure in production</span></div><small>Demo mode: no real payment is processed.</small></aside>
+      </div>
+    </section>
+
+    <!-- REFERRALS -->
+    <section id="page-referrals" class="page">
+      <div class="container referral-hero">
+        <div><span class="eyebrow">REFER & EARN</span><h1>Build your reward circle.</h1><p>Invite friends and earn bonuses when they complete qualifying activities.</p></div>
+        <div class="ref-code"><small>Your referral link</small><div><input id="refInput" readonly value="https://cashreward.example/ref/JERRY25"><button onclick="copyReferral()">Copy</button></div></div>
+      </div>
+      <div class="container stats-grid referral-stats"><div class="stat-card"><small>Total referrals</small><strong>18</strong></div><div class="stat-card"><small>Active referrals</small><strong>12</strong></div><div class="stat-card"><small>Referral earnings</small><strong>₵72.00</strong></div><div class="stat-card"><small>Next bonus</small><strong>2 invites</strong></div></div>
+      <div class="container content-grid mt"><div class="leader-card"><div class="section-heading"><div><span class="eyebrow">NETWORK</span><h2>Your referrals</h2></div></div><div class="ref-row"><span class="avatar small">KO</span><div><b>Kojo</b><small>Active · earned ₵34.00</small></div><strong>+₵10</strong></div><div class="ref-row"><span class="avatar small">AM</span><div><b>Ama</b><small>Active · earned ₵21.50</small></div><strong>+₵8</strong></div><div class="ref-row"><span class="avatar small">RK</span><div><b>Richie</b><small>Pending qualification</small></div><strong>—</strong></div></div><aside class="tier-card"><span class="eyebrow">REFERRAL TIERS</span><h3>Level 2</h3><p>Refer 20 qualifying users to unlock a bigger bonus rate.</p><div class="progress"><span style="width:90%"></span></div><div class="progress-label"><span>18</span><span>20</span></div></aside></div>
+    </section>
+
+    <!-- LEADERBOARD -->
+    <section id="page-leaderboard" class="page">
+      <div class="container page-head"><span class="eyebrow">TOP EARNERS</span><h1>Leaderboard</h1><p>Compete for weekly bonus rewards.</p></div>
+      <div class="container podium"><div class="podium-card second"><span>🥈</span><b>Kwame</b><strong>9,820 pts</strong></div><div class="podium-card first"><span>👑</span><b>Akua</b><strong>12,450 pts</strong></div><div class="podium-card third"><span>🥉</span><b>David</b><strong>8,760 pts</strong></div></div>
+      <div class="container leaderboard-table"><div class="lb-row header"><span>#</span><span>User</span><span>Tier</span><span>Points</span><span>Reward</span></div><div class="lb-row"><span>4</span><span class="user-cell"><i>JM</i>Jemima</span><span>Gold</span><span>7,540</span><b>₵20</b></div><div class="lb-row"><span>5</span><span class="user-cell"><i>PA</i>Prince</span><span>Gold</span><span>6,930</span><b>₵15</b></div><div class="lb-row me"><span>6</span><span class="user-cell"><i>JA</i>You</span><span>Gold</span><span>4,850</span><b>₵10</b></div></div>
+    </section>
+  </main>
+
+  <footer><div class="container footer-inner"><b>₵ CashReward</b><span>Earn. Complete. Reward.</span><div><button onclick="showModal('termsModal')">Terms</button><button onclick="showModal('privacyModal')">Privacy</button><button onclick="showModal('supportModal')">Support</button></div></div></footer>
+
+  <!-- MODALS -->
+  <div id="withdrawModal" class="modal"><div class="modal-box"><button class="close" onclick="hideModal('withdrawModal')">×</button><span class="eyebrow">WITHDRAW</span><h2>Request a withdrawal</h2><p>Demo interface — connect this form to your secure backend/payment provider before launch.</p><label>Amount (GHS)<input id="withdrawAmount" type="number" min="10" placeholder="Minimum 10"></label><label>Method<select><option>Mobile Money</option><option>Bank Transfer</option></select></label><label>Account / Number<input placeholder="e.g. 024 XXX XXXX"></label><button class="btn btn-gold full" onclick="requestWithdrawal()">Submit request</button></div></div>
+  <div id="profileModal" class="modal"><div class="modal-box"><button class="close" onclick="hideModal('profileModal')">×</button><span class="eyebrow">PROFILE</span><h2>Jeremiah</h2><p>Gold member · 4,850 points</p><label>Display name<input value="Jeremiah"></label><label>Email<input value="demo@example.com"></label><button class="btn btn-gold full" onclick="hideModal('profileModal');toast('Profile saved in demo mode')">Save</button></div></div>
+  <div id="settingsModal" class="modal"><div class="modal-box"><button class="close" onclick="hideModal('settingsModal')">×</button><span class="eyebrow">SETTINGS</span><h2>Preferences</h2><label class="switch-row">Email notifications <input type="checkbox" checked></label><label class="switch-row">Reward alerts <input type="checkbox" checked></label><button class="btn btn-gold full" onclick="hideModal('settingsModal')">Done</button></div></div>
+  <div id="termsModal" class="modal"><div class="modal-box"><button class="close" onclick="hideModal('termsModal')">×</button><span class="eyebrow">LEGAL</span><h2>Terms</h2><p>Demo placeholder. Add your real reward rules, eligibility, prohibited activity, withdrawal conditions, dispute process and governing law before accepting users.</p></div></div>
+  <div id="privacyModal" class="modal"><div class="modal-box"><button class="close" onclick="hideModal('privacyModal')">×</button><span class="eyebrow">LEGAL</span><h2>Privacy</h2><p>Demo placeholder. Add a real privacy policy describing data collection, retention, sharing, security and user rights before launch.</p></div></div>
+  <div id="supportModal" class="modal"><div class="modal-box"><button class="close" onclick="hideModal('supportModal')">×</button><span class="eyebrow">SUPPORT</span><h2>How can we help?</h2><textarea placeholder="Describe your issue..."></textarea><button class="btn btn-gold full" onclick="hideModal('supportModal');toast('Support request saved in demo mode')">Send request</button></div></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
