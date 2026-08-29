@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>CashReward Dashboard</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #080808;
+            color: white;
+            min-height: 100vh;
+        }
+
+        header {
+            height: 70px;
+            padding: 0 25px;
+            border-bottom: 1px solid #222;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #0d0d0d;
+        }
+
+        .logo {
+            font-size: 23px;
+            font-weight: bold;
+            color: #f5b942;
+        }
+
+        .user-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .email {
+            color: #aaa;
+            font-size: 14px;
+        }
+
+        .logout {
+            background: #191919;
+            color: white;
+            border: 1px solid #333;
+            padding: 9px 15px;
+            border-radius: 7px;
+            cursor: pointer;
+        }
+
+        .container {
+            width: min(1200px, 94%);
+            margin: auto;
+            padding: 35px 0;
+        }
+
+        .welcome {
+            margin-bottom: 30px;
+        }
+
+        .welcome h1 {
+            font-size: 34px;
+            margin-bottom: 8px;
+        }
+
+        .welcome p {
+            color: #888;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 35px;
+        }
+
+        .stat {
+            background: #111;
+            border: 1px solid #252525;
+            border-radius: 15px;
+            padding: 25px;
+        }
+
+        .stat-label {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #f5b942;
+        }
+
+        .section-title {
+            font-size: 24px;
+            margin-bottom: 18px;
+        }
+
+        .tasks {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+        }
+
+        .task {
+            background: #111;
+            border: 1px solid #252525;
+            border-radius: 15px;
+            padding: 23px;
+        }
+
+        .task h3 {
+            margin-bottom: 10px;
+        }
+
+        .task p {
+            color: #888;
+            line-height: 1.5;
+            margin-bottom: 18px;
+        }
+
+        .reward {
+            color: #f5b942;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .task button {
+            width: 100%;
+            background: #f5b942;
+            color: #080808;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .task button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .empty {
+            color: #777;
+            padding: 20px 0;
+        }
+
+        .loading {
+            color: #aaa;
+            padding: 20px 0;
+        }
+
+        .error {
+            color: #ff7777;
+            padding: 20px 0;
+        }
+
+        @media (max-width: 850px) {
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .tasks {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 550px) {
+
+            header {
+                padding: 0 15px;
+            }
+
+            .email {
+                display: none;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .tasks {
+                grid-template-columns: 1fr;
+            }
+
+            .welcome h1 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+
+    <div class="logo">
+        CashReward
+    </div>
+
+    <div class="user-area">
+
+        <div class="email" id="userEmail">
+            Loading...
+        </div>
+
+        <button class="logout" onclick="logout()">
+            Logout
+        </button>
+
+    </div>
+
+</header>
+
+
+<main class="container">
+
+    <div class="welcome">
+
+        <h1 id="welcomeName">
+            Welcome 👋
+        </h1>
+
+        <p>
+            Complete tasks and earn rewards.
+        </p>
+
+    </div>
+
+
+    <div class="stats">
+
+        <div class="stat">
+
+            <div class="stat-label">
+                Balance
+            </div>
+
+            <div class="stat-value" id="balance">
+                GH₵0.00
+            </div>
+
+        </div>
+
+
+        <div class="stat">
+
+            <div class="stat-label">
+                Points
+            </div>
+
+            <div class="stat-value" id="points">
+                0
+            </div>
+
+        </div>
+
+
+        <div class="stat">
+
+            <div class="stat-label">
+                Tier
+            </div>
+
+            <div class="stat-value" id="tier">
+                —
+            </div>
+
+        </div>
+
+
+        <div class="stat">
+
+            <div class="stat-label">
+                Tasks Completed
+            </div>
+
+            <div class="stat-value" id="completedTasks">
+                0
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <section>
+
+        <h2 class="section-title">
+            Available Tasks
+        </h2>
+
+        <div id="tasks" class="tasks">
+
+            <div class="loading">
+                Loading tasks...
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<script>
+
+const supabaseClient = window.supabase.createClient(
+    window.CASHREWARD_CONFIG.SUPABASE_URL,
+    window.CASHREWARD_CONFIG.SUPABASE_ANON_KEY
+);
+
+
+async function loadDashboard() {
+
+    const {
+        data: {
+            user
+        }
+    } = await supabaseClient.auth.getUser();
+
+
+    if (!user) {
+
+        window.location.href = "index.html";
+
+        return;
+
+    }
+
+
+    document.getElementById("userEmail").textContent =
+        user.email;
+
+
+    const {
+        data: profile,
+        error: profileError
+    } = await supabaseClient
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+
+    if (profileError) {
+
+        console.error(profileError);
+
+        document.getElementById("welcomeName").textContent =
+            "Welcome 👋";
+
+    } else {
+
+        document.getElementById("welcomeName").textContent =
+            "Welcome, " +
+            (profile.full_name || "User") +
+            " 👋";
+
+        document.getElementById("balance").textContent =
+            "GH₵" +
+            Number(profile.balance || 0).toFixed(2);
+
+        document.getElementById("points").textContent =
+            profile.points || 0;
+
+        document.getElementById("tier").textContent =
+            profile.tier || "Bronze";
+    }
+
+
+    loadTasks();
+
+}
+
+
+async function loadTasks() {
+
+    const container =
+        document.getElementById("tasks");
+
+
+    const {
+        data: tasks,
+        error
+    } = await supabaseClient
+        .from("tasks")
+        .select("*")
+        .eq("active", true)
+        .order("created_at", {
+            ascending: false
+        });
+
+
+    if (error) {
+
+        console.error(error);
+
+        container.innerHTML =
+            '<div class="error">Unable to load tasks.</div>';
+
+        return;
+
+    }
+
+
+    if (!tasks || tasks.length === 0) {
+
+        container.innerHTML =
+            '<div class="empty">No tasks are available right now.</div>';
+
+        return;
+
+    }
+
+
+    container.innerHTML = "";
+
+
+    tasks.forEach(task => {
+
+        const card =
+            document.createElement("div");
+
+        card.className = "task";
+
+
+        card.innerHTML = `
+
+            <h3>${escapeHtml(task.title || "Task")}</h3>
+
+            <p>
+                ${escapeHtml(task.description || "Complete this task to earn rewards.")}
+            </p>
+
+            <div class="reward">
+                +${Number(task.reward || 0)} points
+            </div>
+
+            <button onclick="completeTask('${task.id}')">
+                Complete Task
+            </button>
+
+        `;
+
+
+        container.appendChild(card);
+
+    });
+
+}
+
+
+async function completeTask(taskId) {
+
+    alert(
+        "Task submission will be connected next."
+    );
+
+}
+
+
+async function logout() {
+
+    await supabaseClient.auth.signOut();
+
+    window.location.href = "index.html";
+
+}
+
+
+function escapeHtml(value) {
+
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+
+}
+
+
+loadDashboard();
+
+</script>
+
+</body>
+</html>
