@@ -360,12 +360,6 @@
 
 <script src="config.js"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js"></script>
-
 <script>
 
 const supabaseClient = window.supabase.createClient(
@@ -459,12 +453,12 @@ async function submitAuth() {
                 return;
             }
 
-            message.textContent =
-                "Login successful!";
+           message.textContent =
+    "Login successful!";
 
-            setTimeout(() => {
-                closeAuth();
-            }, 1000);
+setTimeout(() => {
+    window.location.href = "/cashreward/dashboard.html";
+}, 800);
         }
 
     } catch (error) {
