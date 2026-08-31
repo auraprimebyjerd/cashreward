@@ -138,7 +138,8 @@
             margin-bottom: 15px;
         }
 
-        .task button {
+        .task button,
+        .buy-button {
             width: 100%;
             background: #f5b942;
             color: #080808;
@@ -149,18 +150,44 @@
             cursor: pointer;
         }
 
-        .task button:disabled {
+        .task button:disabled,
+        .buy-button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
 
-        .empty {
-            color: #777;
-            padding: 20px 0;
+        .package-card {
+            background: #111;
+            border: 1px solid #252525;
+            border-radius: 15px;
+            padding: 23px;
+        }
+
+        .package-card h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .package-price {
+            font-size: 28px;
+            font-weight: bold;
+            color: #f5b942;
+            margin-bottom: 12px;
+        }
+
+        .package-description {
+            color: #888;
+            line-height: 1.5;
+            margin-bottom: 18px;
         }
 
         .loading {
             color: #aaa;
+            padding: 20px 0;
+        }
+
+        .empty {
+            color: #777;
             padding: 20px 0;
         }
 
@@ -169,8 +196,16 @@
             padding: 20px 0;
         }
 
-        @media (max-width: 850px) {
+        .message {
+            display: none;
+            margin-bottom: 25px;
+            padding: 15px;
+            border-radius: 10px;
+            background: #151515;
+            border: 1px solid #333;
+        }
 
+        @media (max-width: 850px) {
             .stats {
                 grid-template-columns: repeat(2, 1fr);
             }
@@ -181,7 +216,6 @@
         }
 
         @media (max-width: 550px) {
-
             header {
                 padding: 0 15px;
             }
@@ -227,7 +261,6 @@
 
 </header>
 
-
 <main class="container">
 
     <div class="welcome">
@@ -237,16 +270,16 @@
         </h1>
 
         <p>
-            Complete tasks and earn rewards.
+            Complete tasks and manage your account.
         </p>
 
     </div>
 
+    <div id="message" class="message"></div>
 
     <div class="stats">
 
         <div class="stat">
-
             <div class="stat-label">
                 Balance
             </div>
@@ -254,12 +287,9 @@
             <div class="stat-value" id="balance">
                 GH₵0.00
             </div>
-
         </div>
 
-
         <div class="stat">
-
             <div class="stat-label">
                 Points
             </div>
@@ -267,12 +297,9 @@
             <div class="stat-value" id="points">
                 0
             </div>
-
         </div>
 
-
         <div class="stat">
-
             <div class="stat-label">
                 Tier
             </div>
@@ -280,12 +307,9 @@
             <div class="stat-value" id="tier">
                 —
             </div>
-
         </div>
 
-
         <div class="stat">
-
             <div class="stat-label">
                 Tasks Completed
             </div>
@@ -293,11 +317,35 @@
             <div class="stat-value" id="completedTasks">
                 0
             </div>
-
         </div>
 
     </div>
 
+
+    <!-- PACKAGES -->
+
+    <section style="margin-bottom: 40px;">
+
+        <h2 class="section-title">
+            Buy a Reward Token
+        </h2>
+
+        <p style="color:#888; margin-bottom:20px;">
+            Choose a package and complete payment securely through Paystack.
+        </p>
+
+        <div id="packages" class="tasks">
+
+            <div class="loading">
+                Loading packages...
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- TASKS -->
 
     <section>
 
@@ -326,6 +374,14 @@ const supabaseClient = window.supabase.createClient(
 );
 
 
+const CREATE_PAYMENT_FUNCTION =
+    window.CASHREWARD_CONFIG.SUPABASE_URL +
+    "/functions/v1/create-payment";
+
+
+let currentUser = null;
+
+
 async function loadDashboard() {
 
     const {
@@ -342,6 +398,9 @@ async function loadDashboard() {
         return;
 
     }
+
+
+    currentUser = user;
 
 
     document.getElementById("userEmail").textContent =
@@ -384,7 +443,181 @@ async function loadDashboard() {
     }
 
 
-    loadTasks();
+    await loadPackages();
+
+    await loadTasks();
+
+}
+
+
+async function loadPackages() {
+
+    const container =
+        document.getElementById("packages");
+
+
+    const {
+        data: packages,
+        error
+    } = await supabaseClient
+        .from("packages")
+        .select("*")
+        .eq("active", true)
+        .order("price", {
+            ascending: true
+        });
+
+
+    if (error) {
+
+        console.error(error);
+
+        container.innerHTML =
+            '<div class="error">Unable to load packages.</div>';
+
+        return;
+
+    }
+
+
+    if (!packages || packages.length === 0) {
+
+        container.innerHTML =
+            '<div class="empty">No packages are available right now.</div>';
+
+        return;
+
+    }
+
+
+    container.innerHTML = "";
+
+
+    packages.forEach(packageItem => {
+
+        const card =
+            document.createElement("div");
+
+        card.className = "package-card";
+
+
+        card.innerHTML = `
+
+            <h3>
+                ${escapeHtml(packageItem.name || "Package")}
+            </h3>
+
+            <div class="package-price">
+                GH₵${Number(packageItem.price || 0).toFixed(2)}
+            </div>
+
+            <div class="package-description">
+                ${escapeHtml(
+                    packageItem.description ||
+                    "Choose this package to continue."
+                )}
+            </div>
+
+            <button
+                class="buy-button"
+                onclick="buyPackage('${packageItem.id}')"
+            >
+                Buy Now
+            </button>
+
+        `;
+
+
+        container.appendChild(card);
+
+    });
+
+}
+
+
+async function buyPackage(packageId) {
+
+    const buttons =
+        document.querySelectorAll(".buy-button");
+
+
+    buttons.forEach(button => {
+        button.disabled = true;
+        button.textContent = "Opening Paystack...";
+    });
+
+
+    try {
+
+        const {
+            data: {
+                session
+            }
+        } = await supabaseClient.auth.getSession();
+
+
+        if (!session) {
+
+            throw new Error(
+                "Your session has expired. Please log in again."
+            );
+
+        }
+
+
+        const response =
+            await fetch(
+                CREATE_PAYMENT_FUNCTION,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization":
+                            "Bearer " + session.access_token
+                    },
+
+                    body: JSON.stringify({
+                        package_id: packageId
+                    })
+                }
+            );
+
+
+        const result =
+            await response.json();
+
+
+        if (!response.ok || !result.authorization_url) {
+
+            throw new Error(
+                result.error ||
+                "Unable to start payment."
+            );
+
+        }
+
+
+        window.location.href =
+            result.authorization_url;
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        showMessage(
+            error.message ||
+            "Unable to start payment."
+        );
+
+
+        buttons.forEach(button => {
+            button.disabled = false;
+            button.textContent = "Buy Now";
+        });
+
+    }
 
 }
 
@@ -442,17 +675,24 @@ async function loadTasks() {
 
         card.innerHTML = `
 
-            <h3>${escapeHtml(task.title || "Task")}</h3>
+            <h3>
+                ${escapeHtml(task.title || "Task")}
+            </h3>
 
             <p>
-                ${escapeHtml(task.description || "Complete this task to earn rewards.")}
+                ${escapeHtml(
+                    task.description ||
+                    "Complete this task to earn rewards."
+                )}
             </p>
 
             <div class="reward">
                 +${Number(task.reward || 0)} points
             </div>
 
-            <button onclick="completeTask('${task.id}')">
+            <button
+                onclick="completeTask('${task.id}')"
+            >
                 Complete Task
             </button>
 
@@ -471,6 +711,26 @@ async function completeTask(taskId) {
     alert(
         "Task submission will be connected next."
     );
+
+}
+
+
+function showMessage(text) {
+
+    const message =
+        document.getElementById("message");
+
+
+    message.textContent = text;
+
+    message.style.display = "block";
+
+
+    setTimeout(() => {
+
+        message.style.display = "none";
+
+    }, 5000);
 
 }
 
